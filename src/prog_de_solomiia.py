@@ -1,14 +1,14 @@
-import stanza
+import spacy
 
 def process_text(text, ud_mapping):
-    nlp = stanza.Pipeline(lang='fr', processors='tokenize,mwt,pos,lemma,depparse')
+    nlp = spacy.load("fr_core_news_md")
     doc = nlp(text)
     
     element_list = []
     id_counter = 1
     
-    for sentence in doc.sentences:
-        tokens = [word.lemma for word in sentence.words if word.deprel not in ["nmod", "obl", "advmod"]]
+    for sent in doc.sents:
+        tokens = [token.lemma_ for token in sent if token.dep_ not in ["nmod", "obl", "advmod"]]
         base_entry = {
             "id": id_counter,
             "formes": tokens,
@@ -18,15 +18,15 @@ def process_text(text, ud_mapping):
         }
         element_list.append(base_entry)
         
-        for word in sentence.words:
-            if word.deprel in ud_mapping:
+        for token in sent:
+            if token.dep_ in ud_mapping:
                 id_counter += 1
                 dep_entry = {
                     "id": id_counter,
-                    "formes": modify_sentence(tokens, word.id - 1),
+                    "formes": modify_sentence(tokens, token.i),
                     "gouverneur": base_entry["id"],
-                    "type de relation": ud_mapping[word.deprel],
-                    "UD": word.deprel
+                    "type de relation": ud_mapping[token.dep_],
+                    "UD": token.dep_
                 }
                 element_list.append(dep_entry)
                 
@@ -36,7 +36,8 @@ def process_text(text, ud_mapping):
 
 def modify_sentence(tokens, index):
     new_tokens = tokens[:]
-    new_tokens[index] = "Ø"  # Remplace l'élément à index par Ø
+    if 0 <= index < len(new_tokens):
+        new_tokens[index] = "Ø"  # Remplace l'élément à l'index par Ø
     return new_tokens
 
 if __name__ == "__main__":
