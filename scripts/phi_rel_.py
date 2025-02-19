@@ -4,7 +4,7 @@ import spacy
 nlp = spacy.load("fr_core_news_sm")
 
 # Définition des relations selon le tableau fourni
-relations_phi = {"mark", "cc", "advcl", "csubj", "ccomp", "xcomp", "acl"}  # Relations interpropositionnelles (connecteurs logiques)
+relations_phi = {"advcl", "csubj", "ccomp", "xcomp", "acl"}  # Relations interpropositionnelles (connecteurs logiques)
 relations_delta = {"nmod", "appos", "numod", "amod"}  # Relations intrapropositionnelles (modifieurs, compléments)
 
 # Exemple de phrase à analyser
