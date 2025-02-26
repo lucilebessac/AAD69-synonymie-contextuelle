@@ -10,16 +10,11 @@ phrase = "Le bois est plus léger que l'eau puisqu'il remonte à la surface lors
 # Analyse du texte avec SpaCy
 doc = nlp(phrase)
 
-# Dico des nominals core arguments
-nom_core_arguments = {
-    "nsubj": [],
-    "obj": [],
-    "iobj": []
-}
 
 # Extraire les core arguments / nominals
 def extract_nominal_core_arguments(doc):
-    local_core_args = {
+    # Dico des nominals core arguments
+    nominals_core_args = {
         "nsubj": [],
         "obj": [],
         "iobj": []
@@ -33,8 +28,8 @@ def extract_nominal_core_arguments(doc):
     # Afficher le token et si il est un core argument, le stocker
     for token in doc:
         print(f"{token.text:<12} {token.dep_:<10} {token.head.text:<12}")
-        if token.dep_ in local_core_args:
-            local_core_args[token.dep_].append({
+        if token.dep_ in nominals_core_args:
+            nominals_core_args[token.dep_].append({
                 "token": token.text,
                 "token_position": token.i,
                 "head": token.head.text,
@@ -42,7 +37,7 @@ def extract_nominal_core_arguments(doc):
                 "relation": token.dep_
             })
     
-    return local_core_args
+    return nominals_core_args
 
 # Extraire et reconstruire la structure de base de chaque proposition
 def extraire_structure_de_base(doc):
