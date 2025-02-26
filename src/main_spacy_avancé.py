@@ -170,10 +170,10 @@ for relation_type, arguments in results.items():
         print(f"\n{relation_type.upper()}: -")
 
 # Afficher les dépendances avec les nom core arguments mis en avant
-print("\nLA PHRASE ET LES NOMINAL CORE ARGUMENTS TROUVÉS:")
+print("\nLA PHRASE ET LE DÉTAIL DES NOMINAL CORE ARGUMENTS TROUVÉS:")
 print("-" * 50)
 for token in doc:
-    # Highlight core arguments
+    # Détail des core arguments
     if token.dep_ in ["nsubj", "obj", "iobj"]:
         print(f"{token.i}: {token.text:<15} --{token.dep_}--> {token.head.text} (Position: {token.head.i})")
     else:
@@ -186,11 +186,13 @@ phrases_simples, structures = extraire_structure_de_base(doc)
 
 print("Phrase originale:")
 print(phrase)
-print("\nPropositions simplifiées:")
+print("\nPROPOSITIONS SIMPLIFIÉES:")
+print("-" * 50)
 for i, simple in enumerate(phrases_simples, 1):
     print(f"{i}. {simple}")
 
-print("\nDétail des structures extraites:")
+print("\nDÉTAIL DES PROPOSITIONS:")
+print("-" * 50)
 for i, struct in enumerate(structures, 1):
     print(f"\nProposition {i}:")
     if struct["predicat"]["type"] == "verb":
