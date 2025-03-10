@@ -1,7 +1,7 @@
 import spacy
 
 # Modèle
-nlp = spacy.load("fr_core_news_md")
+nlp = spacy.load("fr_core_news_sm")
 
 # Phrase
 phrase = "Le bois est plus léger que l'eau puisqu'il remonte à la surface lorsqu'on l'enfonce dans l'eau."

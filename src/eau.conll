@@ -1,0 +1,21 @@
+# sent_id = 1
+# text = Le bois est plus léger que l'eau puisqu'il flotte lorsqu'on l'enfonce dans l'eau.
+1	Le	le	DET	DET	Definite=Def|Gender=Masc|Number=Sing|PronType=Art	2	det	_	_
+2	bois	bois	NOUN	NOUN	Gender=Masc|Number=Sing	5	nsubj	_	_
+3	est	être	AUX	AUX	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	cop	_	_
+4	plus	plus	ADV	ADV	_	5	advmod	_	_
+5	léger	léger	ADJ	ADJ	Gender=Masc|Number=Sing	0	root	_	_
+6	que	que	SCONJ	SCONJ	_	8	case	_	_
+7	l'	le	DET	DET	Definite=Def|Number=Sing|PronType=Art	8	det	_	SpaceAfter=No
+8	eau	eau	NOUN	NOUN	Gender=Fem|Number=Sing	4	obj	_	_
+9	puisqu'	puisque	SCONJ	SCONJ	_	11	mark	_	SpaceAfter=No
+10	il	lui	PRON	PRON	Emph=No|Gender=Masc|Number=Sing|Person=3|PronType=Prs	11	nsubj	_	_
+11	flotte	flotter	VERB	VERB	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	advcl	_	_
+12	lorsqu'	lorsque	SCONJ	SCONJ	_	15	mark	_	SpaceAfter=No
+13	on	on	PRON	PRON	Emph=No|Gender=Masc|Number=Sing|Person=3|PronType=Ind	15	nsubj	_	_
+14	l'	lui	PRON	PRON	Emph=No|Number=Sing|Person=3|PronType=Prs	15	obj	_	SpaceAfter=No
+15	enfonce	enfoncer	VERB	VERB	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	11	advcl	_	_
+16	dans	dans	ADP	ADP	_	18	case	_	_
+17	l'	le	DET	DET	Definite=Def|Number=Sing|PronType=Art	18	det	_	SpaceAfter=No
+18	eau	eau	NOUN	NOUN	Gender=Fem|Number=Sing	15	obl:arg	_	SpaceAfter=No
+19	.	.	PUNCT	PUNCT	_	5	punct	_	SpaceAfter=No
