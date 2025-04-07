@@ -118,7 +118,9 @@ def main():
     # patch_torch_load()
 
     text = "Le sol est mouillé parce qu’il a plu cette nuit."
+    chemin = "../data/"
     filename = "pluie"
+    filename = chemin + filename
     generate_conll(text, filename)
 
     print(f"Fichiers {filename}.conll et {filename}.csv générés avec succès !")
