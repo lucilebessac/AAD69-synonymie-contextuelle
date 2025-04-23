@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 23 14:21:23 2025
+Created on Wed Apr 23 14:21:23 
+
+Pour un Corpus (object GrewPy), une request et un parametre donné, donne les mots qu'il ya derrière
+Grâce au numéro de node, on peut récupérer le mot correspondant dans le corpus
+Grâce au module features
 
 @author: hugodumoulin
 """
