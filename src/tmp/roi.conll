@@ -1,0 +1,15 @@
+# sent_id = 1
+# text = Le roi qui est anglais monte sur le trône avec sa soeur.
+1	Le	le	DET	DET	Definite=Def|Gender=Masc|Number=Sing|PronType=Art	2	det	_	_
+2	roi	roi	NOUN	NOUN	Gender=Masc|Number=Sing	6	nsubj	_	_
+3	qui	qui	PRON	PRON	PronType=Rel	5	nsubj	_	_
+4	est	être	AUX	AUX	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	5	cop	_	_
+5	anglais	anglais	ADJ	ADJ	Gender=Masc|Number=Sing	2	acl:relcl	_	_
+6	monte	monter	VERB	VERB	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	0	root	_	_
+7	sur	sur	ADP	ADP	_	9	case	_	_
+8	le	le	DET	DET	Definite=Def|Gender=Masc|Number=Sing|PronType=Art	9	det	_	_
+9	trône	trône	NOUN	NOUN	Gender=Masc|Number=Sing	6	obl:mod	_	_
+10	avec	avec	ADP	ADP	_	12	case	_	_
+11	sa	son	DET	DET	Gender=Fem|Number=Sing|Number[psor]=Sing|Person[psor]=3|Poss=Yes|PronType=Prs	12	det	_	_
+12	soeur	soeur	NOUN	NOUN	Gender=Fem|Number=Sing	6	obl:mod	_	SpaceAfter=No
+13	.	.	PUNCT	PUNCT	_	6	punct	_	SpaceAfter=No

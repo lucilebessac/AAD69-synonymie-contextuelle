@@ -24,7 +24,8 @@ def extraire_heads_et_core_arguments(fichier_csv):
 
     # Liste des ID qui sont des prédicats principaux
     heads_predicats = df.loc[conditions_predicats, "ID"].dropna().astype(int).unique().tolist()
-
+    print(heads_predicats)
+    
     # Étape 2 : Extraction des core arguments liés aux prédicats
     core_arguments = {}
     id_counter = 1  # Initialisation de l'ID unique
