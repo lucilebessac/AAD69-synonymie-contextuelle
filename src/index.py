@@ -29,3 +29,14 @@ def index(corpus, req, param):
                 liste_forms.append(corpus[sent_id].features[str(node_number)][param])
         index.append(liste_forms)
     return index
+
+if __name__ == "__main__":
+    # Exemple d'utilisation
+    treebank_path = "../data/pluie.conll"
+    corpus = grewpy.Corpus(treebank_path)
+    req = "pattern { X-[nsubj|obj|iobj]->Y }"
+    param = "lemma"
+    index(corpus, req, param)
+    for element in index(corpus, req, param):
+        print(element)
+
