@@ -58,8 +58,11 @@ def indexe_enonces_elem(corpus, req, param):
         n+=1
         sent_id= match["sent_id"]
         formes_EE = {
+            "D1": corpus[sent_id].features[str(match["matching"]["nodes"]["Z"])]["lemma"],
             "N1": corpus[sent_id].features[str(match["matching"]["nodes"]["Y"])]["lemma"],
+            "AUX": corpus[sent_id].features[str(match["matching"]["nodes"]["W"])]["lemma"],
             "V": corpus[sent_id].features[str(match["matching"]["nodes"]["X"])]["lemma"],
+
         }
         dico_un_enonce_elem = {
             "id_EE":n,
@@ -75,7 +78,9 @@ if __name__ == "__main__":
     # Exemple d'utilisation
     treebank_path = "../data/phrases_test.conll"
     corpus = grewpy.Corpus(treebank_path)
-    req = "pattern { X-[nsubj|obj|iobj|nsubj:pass|cop]->Y }"
+    req = "pattern { X-[nsubj|obj|iobj|nsubj:pass|cop]->Y;" \
+    "Y-[det]->Z;" \
+    "X-[aux:pass|aux:tense]->W}"
     param = "lemma"
     liste_enonces_elem = indexe_enonces_elem(corpus, req, param)
     print("\n\nLISTE DES ÉNONCÉS ÉLÉMENTAIRES :\n\n",liste_enonces_elem, "\n\n")
