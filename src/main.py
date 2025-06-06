@@ -1,30 +1,64 @@
-import torch
-import torch.serialization
-from numpy.core.multiarray import _reconstruct
-from spacy_conll import init_parser
-import pandas as pd
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr 23 14:21:23 
 
-def patch_torch_load():
-    """
-    Patch la fonction torch.load pour éviter les erreurs de chargement de modèle.
-    Je ne me souviens pas précisément quelle est l'errzeur mais la fonction de 
-    génération du conll nécessite de patcher torch.load pour éviter les erreurs. 
-    Je ne sais pas si c'est lié à la version de torch ou à un autre problème.
-    En gros, il faut patcher torch.load pour qu'il ne lève pas d'erreur lors du
-    chargement du modèle.
-    :return: None  
-    """
-    torch.serialization.add_safe_globals([_reconstruct])
+Pour un Corpus (object GrewPy), une request et un parametre donné, donne les mots qu'il ya derrière
+Grâce au numéro de node, on peut récupérer le mot correspondant dans le corpus
+Grâce au module features
 
-    # Problème sur la fonction torch.load / weights_only=False
-    original_torch_load = torch.load
+@author: hugodumoulin
 
-    def patched_torch_load(*args, **kwargs):
-        if 'weights_only' not in kwargs:
-            kwargs['weights_only'] = False
-        return original_torch_load(*args, **kwargs)
-    
-    torch.load = patched_torch_load
+Modified on 06/06/2025
+
+@by: Lucile Bessac
+
+"""
+
+
+import grewpy
+
+def indexe_enonces_elem(corpus, liste_match, param):
+    grewpy.set_config("sud")
+    print("LISTE DES MATCHS\n")
+    for element in liste_match:
+        print(element)
+
+    liste_des_enonces_elem = []
+    n = 0
+
+    for match in liste_match:
+        sent_id = match["sent_id"]
+        formes_EE = {}
+        nodes = match["matching"]["nodes"]
+
+        formes_EE["D1"] = corpus[sent_id].features[str(nodes["Z"])][param] if "Z" in nodes else ""
+        formes_EE["N1"] = corpus[sent_id].features[str(nodes["Y"])][param] if "Y" in nodes else ""
+        formes_EE["AUX"] = corpus[sent_id].features[str(nodes["W"])][param] if "W" in nodes else ""
+        formes_EE["V"] = corpus[sent_id].features[str(nodes["X"])][param] if "X" in nodes else ""
+
+        dico_un_enonce_elem = {
+            "id_EE": n + 1,
+            "id_sent": sent_id,
+            "formes_EE": formes_EE,
+        }
+        liste_des_enonces_elem.append(dico_un_enonce_elem)
+        n += 1
+
+    return liste_des_enonces_elem
+
+
+def supprimer_doublons_semantiques(enonces):
+    uniques = {}
+
+    for e in enonces:
+        cle = (e["id_sent"], e["formes_EE"]["N1"], e["formes_EE"]["V"])
+        score = sum(1 for v in e["formes_EE"].values() if v != "")
+
+        if cle not in uniques or score > uniques[cle][0]:
+            uniques[cle] = (score, e)
+
+    return [val[1] for val in uniques.values()]
 
 def generate_conll(text, filename):
     """
@@ -47,95 +81,94 @@ def generate_conll(text, filename):
     conll_df.to_csv(f"{filename}.csv", sep="\t", index=False)
 
 
-def extraire_heads_et_core_arguments(fichier_csv):
+if __name__ == "__main__":
+
     """
-    Extrait les prédicats principaux et leurs core arguments à partir d'un fichier CoNLL CSV.
-    Chaque entrée aura un ID unique et contiendra la forme du HEAD.
-
-    :param fichier_csv: Chemin du fichier CSV
-    :return: Liste des prédicats avec leurs core arguments sous forme de dictionnaire
+    Exemple d'utilisation de la fonction indexe_enonces_elem pour extraire les énoncés élémentaires
+    d'un corpus GrewPy à partir de motifs donnés.
     """
-    # Charger le fichier CSV
-    df = pd.read_csv(fichier_csv, sep=None, engine='python')  # Auto-détecter le séparateur
-
-    # Vérifier si les colonnes nécessaires sont présentes
-    if not {"HEAD", "DEPREL", "UPOS", "FORM", "ID"}.issubset(df.columns):
-        print("Erreur : Colonnes nécessaires ('HEAD', 'DEPREL', 'UPOS', 'FORM', 'ID') manquantes.")
-        return []
-
-    # Étape 1 : Identification des prédicats principaux
-    # Liste des conditions pour identifier les prédicats principaux
-    conditions_heads_predicats = (
-        (df["UPOS"] == "VERB") |  # Tous les VERB doivent être pris
-        ((df["UPOS"].isin(["ADJ", "NOUN"])) & (df["DEPREL"].isin(["root", "conj", "ccomp", "xcomp", "advcl", "acl:relcl"])))  # Adjectifs/Noms avec copule
-    )
-
-    # Liste des ID qui sont des prédicats principaux
-    # Vérification des conditions
-    heads_predicats = df.loc[conditions_heads_predicats, "ID"].dropna().astype(int).unique().tolist()
-    print(heads_predicats)
-    
-    # Étape 2 : Extraction des core arguments liés aux prédicats
-    core_arguments = {}
-    id_counter = 1  # Initialisation de l'ID unique
-
-    for _, row in df.iterrows():
-        head_id = row["HEAD"]  # Numéro du gouverneur
-        dep = row["DEPREL"]  # Relation syntaxique
-        form = row["FORM"]  # Mot correspondant
-
-        # Vérifier si le HEAD fait partie des prédicats principaux
-        if head_id in heads_predicats:
-            # Récupérer la forme du HEAD en utilisant son ID
-            head_form = df.loc[df["ID"] == head_id, "FORM"].values
-            head_form = head_form[0] if len(head_form) > 0 else None  # Éviter les erreurs si HEAD est absent
-
-            if head_id not in core_arguments:
-                core_arguments[head_id] = {
-                    "id": id_counter,  # Associer un ID unique
-                    "head": head_form,  # Ajouter la **forme du HEAD** dans le dictionnaire
-                    "nsubj": [],
-                    "obj": [],
-                    "iobj": [],
-                    "cop": []
-                }
-                id_counter += 1  # Incrémenter l'ID
-
-            # Ajouter les arguments selon la relation
-            if dep == "nsubj":
-                core_arguments[head_id]["nsubj"].append(form)
-            elif dep == "obj":
-                core_arguments[head_id]["obj"].append(form)
-            elif dep == "iobj":
-                core_arguments[head_id]["iobj"].append(form)
-            elif dep == "cop":
-                core_arguments[head_id]["cop"].append(form)
-            # Ajouter d'autres relations si nécessaire
-
-    return heads_predicats, core_arguments
-
-def main():
-    # patch_torch_load()
-
-    text = "Le sol est mouillé parce qu’il a plu cette nuit."
+    # Génération d'un fichier CoNLL à partir d'un texte
     chemin = "../data/"
     filename = "pluie"
     filename = chemin + filename
     generate_conll(text, filename)
 
-    print(f"Fichiers {filename}.conll et {filename}.csv générés avec succès !")
 
-    fichier_csv = f"{filename}.csv"  # Mets ici le bon chemin de ton fichier
-    heads_predicats, core_args = extraire_heads_et_core_arguments(fichier_csv)
+    treebank_path = "../data/phrases_test.conll"
+    corpus = grewpy.Corpus(treebank_path)
+    param = "lemma"
 
-    # Affichage des résultats
-    print("\n🔹 **Liste des HEADs correspondant aux prédicats principaux :**")
-    print(heads_predicats)
+    patterns = [
+        # Tous les éléments présents
+        """pattern {
+            X-[nsubj|obj|iobj|nsubj:pass|cop]->Y;
+            Y-[det]->Z;
+            X-[aux:pass|aux:tense]->W;
+        }""",
+        # Sans D1 (Z)
+        """pattern {
+            X-[nsubj|obj|iobj|nsubj:pass|cop]->Y;
+            X-[aux:pass|aux:tense]->W;
+        }""",
+        # Sans AUX (W)
+        """pattern {
+            X-[nsubj|obj|iobj|nsubj:pass|cop]->Y;
+            Y-[det]->Z;
+        }""",
+        # Sans D1 et AUX
+        """pattern {
+            X-[nsubj|obj|iobj|nsubj:pass|cop]->Y;
+        }""",
+    ]
 
-    print("\n🔹 **Core Arguments extraits avec ID unique et FORME du HEAD :**")
-    for head, args in core_args.items():
-        print(f"HEAD '{args['head']}': {args}")
+    all_matches = []
+    for pat in patterns:
+        req = grewpy.Request(pat)
+        matches = corpus.search(req)
+        all_matches.extend(matches)
+
+    liste_enonces_elem = indexe_enonces_elem(corpus, all_matches, param)
+    liste_enonces_elem = supprimer_doublons_semantiques(liste_enonces_elem)
+
+    print("\n\nLISTE DES ÉNONCÉS ÉLÉMENTAIRES SANS DOUBLONS :\n")
+    for element in liste_enonces_elem:
+        print(element)
 
 
-if __name__ == "__main__":
-    main()
+
+
+    # liste_des_enonces_elem=[]
+    # n = 0
+
+    # Un match est un X et un Y correspondant à la requête
+    # match = {'sent_id': '3', 'matching': {'nodes': {'Y': '2', 'X': '4'}, 'edges': {}}}
+
+    # for match in liste_match:
+    #     n+= 1
+    #     sent_id = match["sent_id"]
+    #     print(f"sent_id = {sent_id}")
+
+    #     # On récupère le numéro de node de Y et X
+    #     #  {'nodes': {'Y': '2', 'X': '4'}}
+    #     liste_node=[]
+    #     for node_number in match["matching"]["nodes"].values():
+    #         liste_node.append(int(node_number))
+    #     liste_node.sort()
+        
+    #     # On récupère le 'param' demandé (ici 'lemma') pour chaque node
+    #     liste_forms = []
+    #     for node_number in liste_node:
+    #         # print("corpus[sent_id].features", corpus[sent_id].features)
+    #         if param in corpus[sent_id].features[str(node_number)]:
+    #             # print(f"node_number = {node_number}")
+    #             # print(f"param = {param}")
+    #             # print(f"corpus[sent_id].features[str(node_number)] = {corpus[sent_id].features[str(node_number)]}")
+                
+    #             liste_forms.append(corpus[sent_id].features[str(node_number)][param])
+    #     dico_un_enonce_elem = {
+    #         "id_EE":n,
+    #         "id_sent": sent_id,
+    #         "formes": liste_forms,
+    #     }
+    #     liste_des_enonces_elem.append(dico_un_enonce_elem)
+    # return liste_des_enonces_elem
