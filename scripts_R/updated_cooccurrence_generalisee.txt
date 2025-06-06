@@ -37,8 +37,8 @@ tokens <- unlist(tokens_list)
 
 # C'EST TROP LONG A EXECUTER
 
-# 8. Limiter à 10 000 tokens pour tester rapidement
-tokens <- tokens[1:min(10000, length(tokens))]
+# 8. Limiter à 100 000 tokens pour tester rapidement
+tokens <- tokens[1:min(100000, length(tokens))]
 cat("Nombre de tokens utilisés :", length(tokens), "\n")
 
 # 9. Générer les triplets (mot, contexte, 1)                                  # PAGE 18    essayer different types of co-occurrence
@@ -64,13 +64,6 @@ cooc_df_agg <- aggregate(score ~ term + context, data = cooc_df, sum)
 colnames(cooc_df_agg) <- c("term", "context", "score")  # sécurité
 
 # 11. Créer la matrice DSM brute
-dsm_raw <- dsm(cooc_df_agg, raw.freq = TRUE)
-
-# ERREUR
-        #Error in dsm.is.canonical(M) :
-            #  first argument must be a dense or sparse numeric matrix
-
-#DONC
 library(Matrix)
 
 # Vocabulaire commun termes + contextes
@@ -114,26 +107,7 @@ text(coords, labels = rownames(coords), cex = 0.7, col = "blue")
 # factoextra library
 
 
-# 17. pour clusteriser
-eval.clustering(dsm_raw)
-
-#ERROR
-        #Error in eval.clustering(dsm_raw) :
-            #gold standard does not have a column labelled 'word'
-
-# 18.
-
-gold <- data.frame(
-    term = c("démocratie", "république", "élections",
-             "marché", "entreprise", "capital"),
-    cluster = c("politique", "politique", "politique",
-                "économie", "économie", "économie"),
-    stringsAsFactors = FALSE
-)
-
-eval.clustering(dsm_ppmi, gold)
-
-colnames(gold)[colnames(gold) == "word"] <- "term"
+# 17. Clustering
 
 # Sélection des top mots (repris des étapes précédentes)
 mat_ppmi <- dsm_ppmi$M
@@ -157,11 +131,13 @@ dist_mat_top <- dist.matrix(dsm_top, method = "cosine")
 # Réduction MDS
 coords_kmeans <- cmdscale(dist_mat_top, k = 2)
 
+
+## MDS des mots
 # Visualisation simple
 plot(coords_kmeans, type = "n", main = "MDS des mots")
 text(coords_kmeans, labels = rownames(coords_kmeans), col = "blue")
 
-# 19. Visualiser MDS + K-means
+# 18. Visualiser MDS + K-means
 coords_df <- as.data.frame(coords_kmeans)
 colnames(coords_df) <- c("Dim1", "Dim2")  # noms explicites
 
@@ -177,32 +153,42 @@ fviz_cluster(clustering, data = coords_df,
               repel = TRUE,
               main = "Clustering des mots (MDS + K-means)")
 
-# 20. Visualiser PCA + K-means
+# 19. Visualiser PCA + K-means
 
-# Use PPMI-weighted DSM
+# Convertir DSM en matrice dense (attention à la mémoire)
 mat <- as.matrix(dsm_ppmi)
 
-# Filter out rows with zero variance (to avoid PCA error)
+# Supprimer lignes constantes (variance nulle)
 non_constant_rows <- apply(mat, 1, function(x) sd(x) > 0)
 mat <- mat[non_constant_rows, ]
 
-# (Optional) Keep only top N rows by row sum (e.g. most frequent or "important")
+# Supprimer colonnes constantes
+non_constant_cols <- apply(mat, 2, function(x) sd(x) > 0)
+mat <- mat[, non_constant_cols]
+
+# Réduire à top N mots les plus fréquents ou informatifs
 row_scores <- rowSums(mat)
 top_n <- 100
 top_words <- names(sort(row_scores, decreasing = TRUE))[1:top_n]
 mat_top <- mat[top_words, ]
 
-coords_pca <- res.pca$x[, 1:2]  # Take Dim 1 and Dim 2
-rownames(coords_pca) <- rownames(mat_top)
+# Vérifier à nouveau qu’il n’y a pas de colonne constante dans mat_top
+non_constant_cols_top <- apply(mat_top, 2, function(x) sd(x) > 0)
+mat_top <- mat_top[, non_constant_cols_top]
 
-# Determine number of clusters (e.g. 4)
+# Exécuter PCA
+res.pca <- prcomp(mat_top, scale. = TRUE)
+
+summary(res.pca)  # To see variance explained
+
+coords_pca <- res.pca$x[, 1:2]  # Take Dim 1 and Dim 2
+
+# K-means (optionnel : ajuster le nombre de clusters k)
 k <- 4
-set.seed(42)
 clustering <- kmeans(coords_pca, centers = k, nstart = 25)
 
-# Visualize with factoextra
+# Visualisation
 library(factoextra)
 fviz_cluster(clustering, data = coords_pca,
              geom = "text", labelsize = 8, repel = TRUE,
              main = "Clustering des mots (PCA + K-means)")
-
