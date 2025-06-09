@@ -1,0 +1,10 @@
+# sent_id = 1
+# text = Le roi arrive.
+
+1	Le	le	DET	DET	Definite=Def|Gender=Masc|Number=Sing|PronType=Art	2	det	_	_
+2	roi	roi	NOUN	NOUN	Gender=Masc|Number=Sing	3	nsubj	_	_
+3	arrive	arriver	VERB	VERB	Mood=Ind|Number=Sing|Person=3|Tense=Pres|VerbForm=Fin	0	root	_	SpaceAfter=No
+4	.	.	PUNCT	PUNCT	_	3	punct	_	SpaceAfter=No
+5	
+	
+	SPACE	_SP	_	5		_	SpaceAfter=No
