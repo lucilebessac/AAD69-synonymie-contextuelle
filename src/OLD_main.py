@@ -10,8 +10,6 @@ def patch_torch_load():
     Je ne me souviens pas précisément quelle est l'errzeur mais la fonction de 
     génération du conll nécessite de patcher torch.load pour éviter les erreurs. 
     Je ne sais pas si c'est lié à la version de torch ou à un autre problème.
-    En gros, il faut patcher torch.load pour qu'il ne lève pas d'erreur lors du
-    chargement du modèle.
     :return: None  
     """
     torch.serialization.add_safe_globals([_reconstruct])
