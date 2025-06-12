@@ -202,11 +202,11 @@ if __name__ == "__main__":
     # Enregistrement dans un fichier texte
     print("Écriture des énoncés dans un fichier texte...")
 
-    output_path = "../data/enonces_elementaires.txt"
+    output_path = "../../data/enonces_elementaires.txt"
     with open(output_path, "w", encoding="utf-8") as f:
         for ee in liste_enonces_elem:
             formes = ee["formes_EE"]
             phrase = " ".join([formes["D1"], formes["N1"], formes["AUX"], formes["V"]])
             f.write(phrase.strip() + ".\n")
 
-    print(f"✅ Fichier texte généré : {output_path}")
+    print(f"Fichier texte généré : {output_path}")
