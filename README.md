@@ -4,6 +4,7 @@ Ce projet propose **trois méthodes distinctes** de sémantique distributionnell
 
 1. **🧠 Approche Word2Vec** : Analyse distributionnelle classique avec clustering
 2. **🔍 Approche Syntaxique (GrewPy)** : Extraction d'énoncés élémentaires par motifs syntaxiques
+3. **🧮 Approche de Cooccurrence** : Matrice de Cooccurrence (DSM) en R Studio
 
 ---
 
@@ -94,6 +95,43 @@ Cette approche se concentre sur l'**extraction d'énoncés élémentaires** bas�
 
 ---
 
+## 🧮 Approche de Cooccurrence** : Matrice de Cooccurrence (DSM) en R Studio
+
+Cette méthode s’appuie sur une matrice de cooccurrences pondérée par PPMI.
+
+### 📌 Objectifs
+* Nettoyer et tokeniser les fichiers du corpus ParlaMint
+* Construire une matrice creuse de cooccurrence (DSM)
+* Appliquer le score PPMI (Positive Pointwise Mutual Information)
+* Réduire la dimension via MDS ou PCA
+* Identifier des groupes sémantiques par k-means
+* Visualiser l’espace sémantique en 2D
+
+### 🔁 Pipeline des scripts (ordre d’exécution)
+1. **Lecture des fichiers du corpus**
+   Chargement de fichiers .txt, suppression des lignes vides et du bruit typographique
+2. **Tokenisation + nettoyage**
+   Mise en minuscules, suppression de ponctuation, mots courts, stopwords
+3. **Extraction des cooccurrences** (fenêtre glissante)
+   Création de triplets (mot, contexte, poids)
+4. **Construction de la matrice DSM**
+   Matrice terme x contexte au format creux (Matrix::sparseMatrix)
+5. **Pondération avec PPMI**
+   Transformation des cooccurrences brutes en scores informatifs
+6. **Réduction de dimension (MDS ou PCA)**
+   Projection 2D pour visualisation
+7. **Clusterisation par k-means**
+   Identification de groupes lexicaux
+8. **Visualisation finale**
+   Représentation graphique avec factoextra::fviz_cluster()
+
+📂 Données produites
+* dsm_ppmi — Matrice DSM (terme x contexte) pondérée par PPMI
+* coords_kmeans — Coordonnées MDS des mots pour affichage
+* mat_top — Matrice dense réduite aux mots les plus fréquents
+* clustering$cluster — Affectation des mots aux clusters
+* Graphiques générés : clustering par MDS et PCA
+
 ## Installation et Dépendances
 
 ### Dépendances communes
@@ -115,3 +153,13 @@ pip install -r requirements.txt
 * `stanza` (≥1.4.0)
 * `torch` (≥1.9.0)
 * `numpy` (≥1.21.0)
+
+### Approche de Cooccurrence
+* installer ces bibliothèques sur R
+  ```
+  install.packages(c(
+  "wordspace", 
+  "stopwords", 
+  "Matrix", 
+  "factoextra"))
+```
